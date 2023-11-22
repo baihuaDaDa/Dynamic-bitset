@@ -1,0 +1,3 @@
+/mnt/c/Users/zwg_w/Desktop/CLion/OJ Exam/No.3/2069/cmake-build-debug/CMakeFiles/2069.dir
+/mnt/c/Users/zwg_w/Desktop/CLion/OJ Exam/No.3/2069/cmake-build-debug/CMakeFiles/edit_cache.dir
+/mnt/c/Users/zwg_w/Desktop/CLion/OJ Exam/No.3/2069/cmake-build-debug/CMakeFiles/rebuild_cache.dir
