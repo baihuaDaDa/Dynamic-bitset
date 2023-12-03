@@ -125,11 +125,61 @@ public:
      */
 
     // 或操作，返回自身的引用。     a |= b 即 a = a | b
-    dynamic_bitset &operator |= (const dynamic_bitset &);
+    dynamic_bitset &operator |= (const dynamic_bitset &rhs) {
+        size_t op_len = std::min(len, rhs.len);
+        const size_t sizeof_v = (op_len + bits - 1) / bits;
+        const size_t mod = op_len % bits;
+        if (sizeof_v == 0) {
+            return *this;
+        }
+        for (size_t i = 0; i < sizeof_v - 1; i++) {
+            v[i] |= rhs.v[i];
+        }
+        if (mod == 0) {
+            v[sizeof_v - 1] |= rhs.v[sizeof_v - 1];
+        } else {
+            v[sizeof_v - 1] |= (rhs.v[sizeof_v - 1] & ((ll(1) << mod) - 1));
+        }
+        return *this;
+    }
     // 与操作，返回自身的引用。     a &= b 即 a = a & b
-    dynamic_bitset &operator &= (const dynamic_bitset &);
+    dynamic_bitset &operator &= (const dynamic_bitset &rhs) {
+        size_t op_len = std::min(len, rhs.len);
+        const size_t sizeof_v = (op_len + bits - 1) / bits;
+        const size_t mod = op_len % bits;
+        if (sizeof_v == 0) {
+            return *this;
+        }
+        for (size_t i = 0; i < sizeof_v - 1; i++) {
+            v[i] &= rhs.v[i];
+        }
+        if (mod == 0) {
+            v[sizeof_v - 1] &= rhs.v[sizeof_v - 1];
+        } else {
+            v[sizeof_v - 1] &= (~((~rhs.v[sizeof_v - 1]) & ((ll(1) << mod) - 1)));
+        }
+        return *this;
+    }
     // 异或操作，返回自身的引用。   a ^= b 即 a = a ^ b
-    dynamic_bitset &operator ^= (const dynamic_bitset &);
+    dynamic_bitset &operator ^= (const dynamic_bitset &rhs) {
+        size_t op_len = std::min(len, rhs.len);
+        const size_t sizeof_v = (op_len + bits - 1) / bits;
+        const size_t mod = op_len % bits;
+        if (sizeof_v == 0) {
+            return *this;
+        }
+        for (size_t i = 0; i < sizeof_v - 1; i++) {
+            v[i] ^= rhs.v[i];
+        }
+        if (mod == 0) {
+            v[sizeof_v - 1] ^= rhs.v[sizeof_v - 1];
+        } else {
+            ll tmp_lhs = (v[sizeof_v - 1] & ((ll(1) << mod) - 1));
+            ll tmp_rhs = (rhs.v[sizeof_v - 1] & ((ll(1) << mod) - 1));
+            v[sizeof_v - 1] = ((v[sizeof_v - 1] >> mod) << mod) + (tmp_lhs ^ tmp_rhs);
+        }
+        return *this;
+    }
 
     /**
      * @brief 左移 n 位 。类似无符号整数的左移，最低位会补 0.
