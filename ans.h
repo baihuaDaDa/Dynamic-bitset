@@ -159,12 +159,31 @@ public:
         if (mod == 0) {
             v[v.size() - 1] = ll(-1);
         } else {
-            v[v.size() - 1] =
-            return !((~v.back()) & ((ll(1) << (len % bits)) - 1));
+            v[v.size() - 1] = (ll(1) << mod) - 1;
         }
+        return *this;
     }
     // 把所有位取反
-    dynamic_bitset &flip();
+    dynamic_bitset &flip() {
+        if (v.empty()) {
+            return *this;
+        }
+        for (size_t i = 0; i < v.size() - 1; i++) {
+            v[i] = ~v[i];
+        }
+        const size_t mod = len % bits;
+        if (mod == 0) {
+            v[v.size() - 1] = ~v[v.size() - 1];
+        } else {
+            v[v.size() - 1] = ((~v[v.size() - 1]) & ((ll(1) << mod) - 1));
+        }
+        return *this;
+    }
     // 把所有位设置为 0
-    dynamic_bitset &reset();
+    dynamic_bitset &reset() {
+        for (size_t i = 0; i < v.size(); i++) {
+            v[i] = 0;
+        }
+        return *this;
+    }
 };
