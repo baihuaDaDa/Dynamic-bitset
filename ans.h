@@ -7,8 +7,9 @@
 struct dynamic_bitset {
 private:
     using ll = std::uint64_t;
-    std::vector<ll> v;
-    ll len;
+    std::vector<ll> v {};
+    size_t len = 0;
+    static const size_t bits = 64;
 public:
     // 默认构造函数，默认长度为 0
     dynamic_bitset() = default;
@@ -31,12 +32,7 @@ public:
     dynamic_bitset &operator = (const dynamic_bitset &) = default;
 
     // 初始化 bitset 的大小为 n ，且全为 0.
-    dynamic_bitset(std::size_t n) {
-        for (ll i = 1; i <= n / 64 + bool(n % 64); i++) {
-            v.push_back(0);
-        }
-        len = n;
-    }
+    dynamic_bitset(std::size_t n) : v(ll((n + bits -1) / bits)), len(n){}
 
     /**
      * @brief 从一个字符串初始化 bitset。
@@ -47,28 +43,44 @@ public:
      * a 的第 2 位是 1
      * a 的第 3 位是 0
      */
-    dynamic_bitset(const std::string &str) : len(str.size()) {
-        ll pos = 0;
-        for (ll i = 0; i < len / 64 + bool(len % 64) ;i++) {
-            v.push_back(0);
-        }
-        for (ll i = 0; i < len; i++) {
-            v[i / 64] |= (ll(str[i] - '0') << (i % 64));
+    dynamic_bitset(const std::string &str) : dynamic_bitset(str.size()) {
+        for (size_t i = 0; i < len; i++) {
+            v[i / bits] |= (ll(str[i] - '0') << (i % bits));
         }
     }
 
     // 访问第 n 个位的值，和 vector 一样是 0-base
     bool operator [] (std::size_t n) const {
-        return ((v[n / 64] >> (n % 64)) & 1ull);
+        const std::size_t div = n / bits;
+        const std::size_t mod = n % bits;
+        return (v[div] >> mod) & 1;
     }
     // 把第 n 位设置为指定值 val
-    dynamic_bitset &set(std::size_t n, bool val = true);
+    dynamic_bitset &set(std::size_t n, bool val = true) {
+        if (n >= len) {
+            return *this;
+        }
+        const size_t div = n / bits;
+        const size_t mod = n % bits;
+        v[div] = ((v[div] & (ll(-1) - (ll(1) << mod))) | (ll(val) << mod));
+        return *this;
+    }
     // 在尾部插入一个位，并且长度加一
-    dynamic_bitset &push_back(bool val);
+    dynamic_bitset &push_back(bool val) {
+        const size_t div = len / bits;
+        const size_t mod = len % bits;
+        if (mod == 0) {
+            v.push_back(ll(val));
+        } else {
+            v[div] |= (ll(val) << mod);
+        }
+        len++;
+        return *this;
+    }
 
     // 如果不存在 1 ，则返回 true。否则返回 false
     bool none() const {
-        for (ll i = 0; i < v.size(); i++) {
+        for (size_t i = 0; i < v.size(); i++) {
             if (v[i]) {
                 return false;
             }
@@ -80,15 +92,15 @@ public:
         if (v.empty()) {
             return true;
         }
-        for (ll i = 0; i < v.size() - 1; i++) {
+        for (size_t i = 0; i < v.size() - 1; i++) {
             if (~(v[i])) {
                 return false;
             }
         }
-        if (len % 64 == 0) {
+        if (len % bits == 0) {
             return !(~v.back());
         } else {
-            return !((~v.back()) & ((1ull << (len % 64)) - 1));
+            return !((~v.back()) & ((ll(1) << (len % bits)) - 1));
         }
     }
 
@@ -136,9 +148,23 @@ public:
     dynamic_bitset &operator >>= (std::size_t n);
 
     // 把所有位设置为 1
-    dynamic_bitset &set     ();
+    dynamic_bitset &set() {
+        if (v.empty()) {
+            return *this;
+        }
+        for (size_t i = 0; i < v.size() - 1; i++) {
+            v[i] = ll(-1);
+        }
+        const size_t mod = len % bits;
+        if (mod == 0) {
+            v[v.size() - 1] = ll(-1);
+        } else {
+            v[v.size() - 1] =
+            return !((~v.back()) & ((ll(1) << (len % bits)) - 1));
+        }
+    }
     // 把所有位取反
-    dynamic_bitset &flip    ();
+    dynamic_bitset &flip();
     // 把所有位设置为 0
-    dynamic_bitset &reset   ();
+    dynamic_bitset &reset();
 };
