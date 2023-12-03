@@ -5,8 +5,11 @@
 #include <algorithm>
 
 struct dynamic_bitset {
-    std::vector<unsigned long long> v;
-    unsigned long long len;
+private:
+    using ll = std::uint64_t;
+    std::vector<ll> v;
+    ll len;
+public:
     // 默认构造函数，默认长度为 0
     dynamic_bitset() = default;
 
@@ -29,7 +32,7 @@ struct dynamic_bitset {
 
     // 初始化 bitset 的大小为 n ，且全为 0.
     dynamic_bitset(std::size_t n) {
-        for (unsigned long long i = 1; i <= n / 64 + bool(n % 64); i++) {
+        for (ll i = 1; i <= n / 64 + bool(n % 64); i++) {
             v.push_back(0);
         }
         len = n;
@@ -44,22 +47,19 @@ struct dynamic_bitset {
      * a 的第 2 位是 1
      * a 的第 3 位是 0
      */
-    dynamic_bitset(const std::string &str) {
-        len = str.size();
-        unsigned long long pos = 0;
-        for (unsigned long long i = 0; i < len / 64 + bool(len % 64) ;i++) {
+    dynamic_bitset(const std::string &str) : len(str.size()) {
+        ll pos = 0;
+        for (ll i = 0; i < len / 64 + bool(len % 64) ;i++) {
             v.push_back(0);
-            for (unsigned long long j = 0; j < 64 && j + pos < len; j++) {
-                v[i] |= ((unsigned long long)(str[j + pos] - '0') << (j + pos));
-//                std::cout << v[i] << std::endl;
-            }
-            pos += 64;
+        }
+        for (ll i = 0; i < len; i++) {
+            v[i / 64] |= (ll(str[i] - '0') << (i % 64));
         }
     }
 
     // 访问第 n 个位的值，和 vector 一样是 0-base
     bool operator [] (std::size_t n) const {
-        return (v[n / 64] >> (n % 64) & 1ull);
+        return ((v[n / 64] >> (n % 64)) & 1ull);
     }
     // 把第 n 位设置为指定值 val
     dynamic_bitset &set(std::size_t n, bool val = true);
@@ -68,7 +68,7 @@ struct dynamic_bitset {
 
     // 如果不存在 1 ，则返回 true。否则返回 false
     bool none() const {
-        for (unsigned long long i = 0; i < v.size(); i++) {
+        for (ll i = 0; i < v.size(); i++) {
             if (v[i]) {
                 return false;
             }
@@ -80,7 +80,7 @@ struct dynamic_bitset {
         if (v.empty()) {
             return true;
         }
-        for (unsigned long long i = 0; i < v.size() - 1; i++) {
+        for (ll i = 0; i < v.size() - 1; i++) {
             if (~(v[i])) {
                 return false;
             }
