@@ -8,10 +8,12 @@ void print(dynamic_bitset &dyn) {
 
 signed main() {
     freopen("1.out", "w", stdout);
-    std::string str = "111";
-    for (int i = 0 ; i < 4 ; ++i) str += str;
+    std::string str = "101";
+    for (int i = 0 ; i < 5; ++i) str += str;
     dynamic_bitset dyn {str};
     print(dyn);
-    std::cout << dyn.all() << ' ' << dyn.none() << std::endl;
+    dyn >>= 32;
+    print(dyn);
+//    std::cout << dyn.all() << ' ' << dyn.none() << std::endl;
     return 0;
 }

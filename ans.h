@@ -187,7 +187,26 @@ public:
      * a <<= 3 之后，a 应该变成 "0001110"
      * @return 返回自身的引用
      */
-    dynamic_bitset &operator <<= (std::size_t n);
+    dynamic_bitset &operator <<= (std::size_t n) {
+        len += n;
+        const size_t sizeof_v = (len + bits - 1) / bits;
+        const size_t origin_sizeof_v = v.size();
+        for (size_t i = origin_sizeof_v; i < sizeof_v; i++) {
+            v.push_back(0);
+        }
+        const size_t div = n / bits;
+        const size_t mod = n % bits;
+        for (size_t i = 0; i < origin_sizeof_v; i++) {
+            if (mod != 0) {
+                v[origin_sizeof_v - i + div] += (v[origin_sizeof_v - i - 1] >> (bits - mod));
+            }
+            v[origin_sizeof_v - i - 1 + div] = (v[origin_sizeof_v - i - 1] << mod);
+        }
+        for (size_t i = 0; i < div; i++) {
+            v[i] = 0;
+        }
+        return *this;
+    }
     /**
      * @brief 右移 n 位 。类似无符号整数的右移，最低位丢弃。
      * 例如 a = "10100"
@@ -195,8 +214,30 @@ public:
      * a >>= 9 之后，a 应该变成 "" (即长度为 0)
      * @return 返回自身的引用
      */
-    dynamic_bitset &operator >>= (std::size_t n);
-
+    dynamic_bitset &operator >>= (std::size_t n) {
+        if (len <= n) {
+            *this = dynamic_bitset();
+            return *this;
+        }
+        len -= n;
+        const size_t sizeof_v = (len + bits - 1) / bits;
+        const size_t div = n / bits;
+        const size_t mod = n % bits;
+        v.push_back(0);
+        for (size_t i = div; i < v.size() - 1; i++) {
+            v[i - div] = (v[i] >> mod);
+            if (mod != 0) {
+                v[i - div] += ((v[i + 1] & ((ll(1) << mod) - 1)) << (bits - mod));
+            }
+        }
+        for (size_t i = v.size() - 1; i >= sizeof_v; i--) {
+            v.pop_back();
+        }
+        if (len % bits != 0) {
+            v[sizeof_v - 1] &= ((ll(1) << (len - (sizeof_v - 1) * bits))- 1);
+        }
+        return *this;
+    }
     // 把所有位设置为 1
     dynamic_bitset &set() {
         if (v.empty()) {
